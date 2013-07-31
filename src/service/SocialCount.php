@@ -50,36 +50,18 @@ class GooglePlus implements SocialNetwork
 
 	public function getShareCount($url)
 	{
-		// Warning! Reverse Engineered, not an Actual API
-		// http://johndyer.name/getting-counts-for-twitter-links-facebook-likesshares-and-google-1-plusones-in-c-or-php/
-		// Open use license per https://twitter.com/johndyer/status/223239624498229248
-		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_URL, "https://clients6.google.com/rpc");
-		curl_setopt($curl, CURLOPT_POST, 1);
-		curl_setopt($curl, CURLOPT_POSTFIELDS,
-			'[{' .
-			'"method":"pos.plusones.get",' .
-			'"id":"p",' .
-			'"params":{"nolog":true,"id":"' . $url . '","source":"widget","userId":"@viewer","groupId":"@self"},' . 
-			'"jsonrpc":"2.0",' .
-			'"key":"p",' .
-			'"apiVersion":"v1"' .
-			'}]');
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
-		$curl_results = curl_exec ($curl);
-		curl_close ($curl);
-
-		if($curl_results) {
-			$json = json_decode($curl_results, true);
-			if(!isset($json[0]['error'])) {
-				return $json[0]['result']['metadata']['globalCounts']['count'];
-			} else {
-				return NULL;
-			}
-		} else {
-			return NULL;
-		}
+		    //The former code returns null. The following lines work from  http://papermashup.com/google-plus-php-function/
+		  
+		    $contents = file_get_contents( 'https://plusone.google.com/_/+1/fastbutton?url=' .  $url );
+ 
+		    /* pull out count variable with regex */
+		    preg_match( '/window\.__SSR = {c: ([\d]+)/', $contents, $matches );
+			//print_r($contents);exit;
+		 
+		    /* if matched, return count, else zed */
+		    if( isset( $matches[0] ) )
+		        return (int) str_replace( 'window.__SSR = {c: ', '', $matches[0] );
+		    return 0;
 	}
 }
 
